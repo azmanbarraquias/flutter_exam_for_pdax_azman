@@ -55,3 +55,8 @@ This task was completed to demonstrate the ability to fetch, display, and manage
 git clone https://github.com/azmanbarraquias/flutter_exam_for_pdax_azman.git
 cd flutter_exam_for_pdax_azman
 run flutter_exam_for_pdax_azman
+```
+
+## ⭐ Getting Started
+Also available for android WatchOS using flutter 3.29 <br>
+<img src="https://github.com/azmanbarraquias/flutter_exam_for_pdax_azman/blob/main/assets/build_wearos.jpg" width=50% height=50%>
