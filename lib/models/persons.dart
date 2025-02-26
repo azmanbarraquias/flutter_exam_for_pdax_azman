@@ -1,8 +1,6 @@
-// To parse this JSON data, do
-//
-//     final persons = personsFromJson(jsonString);
-
 import 'dart:convert';
+
+// from https://app.quicktype.io/
 
 Persons personsFromJson(String str) => Persons.fromJson(json.decode(str));
 
@@ -82,13 +80,18 @@ class Datum {
     image: json["image"],
   );
 
+   String getFullName () {
+    return '$firstname $lastname';
+  }
+
   Map<String, dynamic> toJson() => {
     "id": id,
     "firstname": firstname,
     "lastname": lastname,
     "email": email,
     "phone": phone,
-    "birthday": "${birthday.year.toString().padLeft(4, '0')}-${birthday.month.toString().padLeft(2, '0')}-${birthday.day.toString().padLeft(2, '0')}",
+    "birthday":
+        "${birthday.year.toString().padLeft(4, '0')}-${birthday.month.toString().padLeft(2, '0')}-${birthday.day.toString().padLeft(2, '0')}",
     "gender": gender,
     "address": address.toJson(),
     "website": website,

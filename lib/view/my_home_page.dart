@@ -1,5 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_exam_for_pdax_azman/models/persons.dart';
+import 'package:flutter_exam_for_pdax_azman/view/person_detail_page.dart';
+import '../services/remote_service.dart';
+import '../widgets/person_list_item.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -11,70 +15,176 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var isLoaded = false;
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _page = 1;
+  final int _limitPerFetch = 10; // Number of items per request
+  final int _totalLimit = 40; // Maximum items before stopping
 
-  void getData() async {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
+  Persons? persons;
+  List<Datum> personList = [];
 
-      // Get Respond
-    });
+  var customCacheManager = CacheManager(
+    Config(
+      'customCacheKey',
+      stalePeriod: Duration(days: 1),
+      maxNrOfCacheObjects: 2000,
+    ),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_scrollListener);
+    getData();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        child: ListView.builder(
-          itemCount: 3,
-          itemBuilder: (ctx, index) {
-            return Card(
-              key: ValueKey(index),
-              margin: const EdgeInsets.all(10),
-              child: ListTile(
-                onTap: () {},
-                leading: FutureBuilder(
-                  future: null,
-                  builder: (
-                    BuildContext context,
-                    AsyncSnapshot<dynamic> snapshot,
-                  ) {
-                    return CachedNetworkImage(
-                      imageUrl: snapshot.data ?? '',
-                      placeholder:
-                          (context, url) => const CircularProgressIndicator(),
-                      errorWidget:
-                          (context, url, error) => const Icon(Icons.error),
-                    );
-                  },
+      body: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: personList.isNotEmpty ? personsList() : loadingWidget(),
+      ),
+    );
+  }
+
+  Future<void> _loadMoreData() async {
+    if (!_isLoading && _hasMore) {
+      getData();
+    }
+  }
+
+  Widget personsList() {
+    return ListView.builder(
+      controller: _scrollController,
+      physics: AlwaysScrollableScrollPhysics(),
+      itemCount: personList.length + 1,
+      itemBuilder: (ctx, index) {
+        if (index < personList.length) {
+          final personData = personList[index];
+          final personURL = 'https://picsum.photos/200/300?random=$index';
+
+          return PersonListItem(
+            key: ValueKey(personData.id),
+            name: '${index + 1}. ${personData.getFullName()}',
+            email: personData.email,
+            image: personURL,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => PersonDetailPage(
+                        key: ValueKey(personData.id),
+                        name: personData.getFullName(),
+                        email: personData.email,
+                        image: personURL,
+                      ),
                 ),
-                title: Text('${index + 1} ' ?? '', maxLines: 1),
-                subtitle: Text("Sub" ?? '', maxLines: 2),
-              ),
-            );
-          },
+              );
+            },
+          );
+        } else {
+          return _hasMore ? loadingIndicator() : noMoreDataWidget();
+        }
+      },
+    );
+  }
+
+  Widget loadingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Widget noMoreDataWidget() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Text(
+          "No more data available",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
         ),
       ),
-      // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  Widget loadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 10),
+          Text('Please Wait . . . '),
+        ],
+      ),
+    );
+  }
+
+  void getData() async {
+    if (_isLoading || !_hasMore) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    Persons? newPersons = await RemoteService().getPersons(
+      quantity: _limitPerFetch,
+      page: _page,
+    );
+
+    if (newPersons != null && newPersons.data.isNotEmpty) {
+      setState(() {
+        personList.addAll(newPersons.data);
+        _page++;
+
+        // Stop loading if we reach the total limit
+        if (personList.length >= _totalLimit) {
+          _hasMore = false;
+        }
+
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _hasMore = false;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 100) {
+      _loadMoreData();
+    }
+  }
+
+  Future<void> onRefresh() async {
+    setState(() {
+      persons = null;
+      _hasMore = true;
+      _page = 1;
+      personList.clear();
+    });
+    getData();
   }
 }
