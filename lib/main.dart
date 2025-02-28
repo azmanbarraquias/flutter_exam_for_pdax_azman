@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_exam_for_pdax_azman/view/my_home_page.dart';
+import 'package:get/get.dart';
+
+import 'controller/favourites_controller.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,8 +13,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter Demo',
+      initialBinding: BindingsBuilder(() {
+        Get.put(FavoritesController()); // Initialize controller globally
+      }),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         pageTransitionsTheme: PageTransitionsTheme(

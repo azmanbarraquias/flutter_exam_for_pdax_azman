@@ -8,12 +8,16 @@ class PersonListItem extends StatelessWidget {
     required this.email,
     required this.image,
     required this.onTap,
+    required this.isFev,
+    required this.fevTap,
   });
 
   final String name;
   final String email;
   final String image;
   final Function() onTap;
+  final bool isFev;
+  final Function() fevTap;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +29,7 @@ class PersonListItem extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: Hero(
-          tag:  key.toString(),
+          tag: key.toString(),
           child: CachedNetworkImage(
             cacheKey: key.toString(),
             imageUrl: image,
@@ -33,12 +37,15 @@ class PersonListItem extends StatelessWidget {
             errorWidget: (ctx, url, error) => const Icon(Icons.error),
           ),
         ),
-        title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(
-          email,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+        trailing: GestureDetector(
+          onTap: fevTap,
+          child: Icon(
+            isFev ? Icons.favorite : Icons.favorite_border,
+            color: isFev ? Colors.red : Colors.grey,
+          ),
         ),
+        title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: Text(email, maxLines: 2, overflow: TextOverflow.ellipsis),
       ),
     );
   }

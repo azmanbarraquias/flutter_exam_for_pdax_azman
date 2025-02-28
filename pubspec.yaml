@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   cached_network_image: any # ^3.4.1 https://pub.dev/packages/cached_network_image
   flutter_cache_manager: any # ^3.4.1 https://pub.dev/packages/flutter_cache_manager
+  get: any # ^4.7.2 https://pub.dev/packages/get
 
 dev_dependencies:
   flutter_test:

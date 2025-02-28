@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_exam_for_pdax_azman/models/persons.dart';
+import 'package:flutter_exam_for_pdax_azman/view/my_favourite_page.dart';
 import 'package:flutter_exam_for_pdax_azman/view/person_detail_page.dart';
+import 'package:get/get.dart';
+import '../controller/favourites_controller.dart';
 import '../services/remote_service.dart';
 import '../widgets/person_list_item.dart';
 
@@ -56,6 +59,8 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actionsPadding: EdgeInsets.only(right: 10),
+        actions: [favouriteBtn()],
       ),
       floatingActionButton:
           isDesktop
@@ -72,6 +77,29 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget favouriteBtn() {
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(Icons.favorite_outline, size: 30, color: Colors.red),
+          onPressed: () {
+            Get.to(MyFavouritePage());
+          },
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Text(
+            'Favorite',
+            style: TextStyle(fontSize: 10),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _loadMoreData() async {
     if (!_isLoading && _hasMore) {
       getData();
@@ -79,6 +107,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget personsList() {
+    final FavoritesController favoritesController = Get.find();
+
     return ListView.builder(
       controller: _scrollController,
       physics: AlwaysScrollableScrollPhysics(),
@@ -88,25 +118,32 @@ class _MyHomePageState extends State<MyHomePage> {
           final personData = personList[index];
           final personURL = 'https://picsum.photos/200/300?random=$index';
 
-          return PersonListItem(
-            key: ValueKey(personData.id),
-            name: '${index + 1}. ${personData.getFullName()}',
-            email: personData.email,
-            image: personURL,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => PersonDetailPage(
-                        key: ValueKey(personData.id),
-                        name: personData.getFullName(),
-                        email: personData.email,
-                        image: personURL,
-                      ),
-                ),
-              );
-            },
+          return Obx(
+            () => PersonListItem(
+              key: ValueKey(personData.id),
+              name: '${index + 1}. ${personData.getFullName()}',
+              email: personData.email,
+              image: personURL,
+              onTap: () {
+                Get.to(
+                  PersonDetailPage(),
+                  arguments: {
+                    'id': personData.id,
+                    'name': personData.getFullName(),
+                    'email': personData.email,
+                    'image': personURL,
+                  },
+                );
+              },
+              isFev: favoritesController.isFavorite(personData),
+              fevTap: () {
+                if (favoritesController.isFavorite(personData)) {
+                  favoritesController.removeFavorite(personData);
+                } else {
+                  favoritesController.addFavorite(personData);
+                }
+              },
+            ),
           );
         } else {
           return _hasMore ? loadingIndicator() : noMoreDataWidget();

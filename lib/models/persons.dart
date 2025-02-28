@@ -80,7 +80,7 @@ class Datum {
     image: json["image"],
   );
 
-   String getFullName () {
+  String getFullName() {
     return '$firstname $lastname';
   }
 
