@@ -26,7 +26,7 @@ This task was completed to demonstrate the ability to fetch, display, and manage
 - 🌍 **Web** ✅
 - 🖥️ **Windows** ✅
 - 💻 **MacOS** (no device, available on March 15)
-- ⌚ **WatchOS** ✅(Protoype)
+- ⌚ **WearOS** ✅(Protoype)
 
 ### **2. Data Fetching**
 - Fetch **20 persons** per request. ✅
@@ -58,6 +58,6 @@ cd flutter_exam_for_pdax_azman
 run flutter_exam_for_pdax_azman
 ```
 
-## ⭐ Bonus: example flutter using RestAPI for WatchOS
-Android WatchOS using flutter 3.29 <br>
+## ⭐ Bonus: example flutter using RestAPI for WearOS
+Android WearOS using flutter 3.29 <br>
 <img src="https://github.com/azmanbarraquias/flutter_exam_for_pdax_azman/blob/main/assets/build_wearos.jpg" width=50% height=50%>
