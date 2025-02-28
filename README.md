@@ -18,6 +18,7 @@ This task was completed to demonstrate the ability to fetch, display, and manage
 - ✅ **Pull-to-Refresh (Mobile) & Refresh Button (Web)**
 - ✅ **Detailed View for Each Person**
 - ✅ **Pagination Handling** (Since FakeAPI lacks real pagination)
+- ✅ *State Management** Getx for Favorite function and navigation
 
 ## 📌 Requirements
 ### **1. Platforms Supported**
